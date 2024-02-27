@@ -1,0 +1,25 @@
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner tastiera = new Scanner(System.in);
+        int n;
+        int min = 0;
+        int max = 100;
+        do {
+            System.out.println("quanti numeri vuoi inserire?");
+            n = tastiera.nextInt();
+            if (Errore(n, min, max)) {
+                System.out.println("out of range");
+            }
+        } while (Errore(n, min, max));
+    }
+
+    public static boolean Errore(int n, int min, int max) {
+        if (n < min || n > max) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
