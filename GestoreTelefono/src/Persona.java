@@ -1,14 +1,22 @@
+
+
 enum Tipologia {
-    cellulare, abitazione, azienda;
+    cellulare,
+    abitazione,
+    azienda
 }
 
-public class Persona {
-    public String nome;
-    public String cognome;
-    public String numDiTelefono;
-    public Tipologia tipo;
+class Persona {
+    String nome;
+    String cognome;
+    String numDiTelefono;
+    Tipologia tipo;
 
     public String anagrafica() {
-        return String.format("Nome: %s Cognome: %s Telefono: %s Tipo: %s", nome, cognome, numDiTelefono, tipo);
+        return "Nome: " + nome + ", Cognome: " + cognome + ", Numero di telefono: " + numDiTelefono + ", Tipo di abbonamento: " + tipo;
+    }
+
+    public String ricercaSingola() {
+        return "Nome: " + nome + ", Cognome: " + cognome + ", Numero di telefono: " + numDiTelefono + ", Tipo di abbonamento: " + tipo;
     }
 }

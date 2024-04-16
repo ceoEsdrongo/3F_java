@@ -1,92 +1,190 @@
 import java.util.Scanner;
 
-import static Tools.Utility.*;
+import static Tools.Utility.menu;
 
 public class Main {
     public static void main(String[] args) {
-        int contacontatti = 0;
         final int nContratti = 3;
-        boolean uscita = false;
         Scanner tastiera = new Scanner(System.in);
         Persona[] gestore = new Persona[nContratti];
-        String[] opzioni = {"***CENTRO ACCOGGLIENZA VODAFONZ***", "1-Inserimento", "2-Visualizza", "3-Fine"};
-        do {
+        String[] opzioni = {"Gestore Telefonico", "1 - Inserimento", "2 - Visualizza", "3 - Verifica presenza contatto", "4 - Ricerca numero telefono", "5 - Elimina contatto", "6 - Fine"};
 
+        boolean fine = false;
+        int contaContatti = 0;
+        int posizione = -1;
+
+        do {
             switch (menu(opzioni, tastiera)) {
-                case 1:
-                    if (contacontatti < nContratti) {
-                        Persona nuovoContatto = LeggiContatto(tastiera);
-                        if (trovaContatto(gestore, nuovoContatto, contacontatti) == -1) {
-                            gestore[contacontatti] = nuovoContatto;
-                            contacontatti++;
-                        } else {
-                            System.out.println("Il contatto è già presente nella collezione.");
+                case 1 -> {
+                    if (nContratti > contaContatti) {
+                        boolean presente = false;
+                        Persona dettagli = LeggiContatto(tastiera);
+                        for (int i = 0; i < contaContatti; i++) {
+                            if (dettagli.nome.equals(gestore[i].nome) && dettagli.cognome.equals(gestore[i].cognome)) {
+                                System.out.println("La persona con questo nome e cognome è già presente!");
+                                presente = true;
+                                break;
+                            }
+                        }
+                        if(!presente) {
+                            gestore[contaContatti] = dettagli;
+                            contaContatti++;
                         }
                     } else {
-                        System.out.println("Non ci sono più contratti da vendere");
+                        System.out.println("Finiti contratti");
                     }
-                    ;
-                    break;
-                case 2:
-                    if (contacontatti > 0) {
-                        Visualizza(gestore, contacontatti);
+                }
+                case 2 -> {
+                    boolean visualizzaSingolo = false;
+                    if (contaContatti > 0) {
+                        Visualizza(gestore, contaContatti, visualizzaSingolo, tastiera, posizione);
                     } else {
                         System.out.println("Non ci sono contatti da visualizzare");
                     }
-                    ;
-                    break;
-                case 3:
-                    uscita = true;
-                    ;
-                    break;
-
+                }
+                case 3 -> {
+                    if (contaContatti > 0) {
+                        if (verificaPresenzaContatto(tastiera, gestore, contaContatti)!=-1) {
+                            System.out.println("Contatto presente");
+                        } else {
+                            System.out.println("Contatto non presente");
+                            System.out.println("Aggiunta del nuovo contatto...");
+                            gestore[contaContatti] = LeggiContatto(tastiera);
+                            contaContatti++;
+                            System.out.println("Contatto aggiunto con successo.");
+                        }
+                    } else {
+                        System.out.println("Non ci sono contatti");
+                    }
+                }
+                case 4 -> {
+                    boolean visualizzaSingolo = true;
+                    if (contaContatti > 0) {
+                        posizione = verificaPresenzaContatto(tastiera, gestore, contaContatti);
+                        if (posizione!=-1) {
+                            System.out.println("Contatto presente");
+                            Visualizza(gestore, contaContatti, visualizzaSingolo, tastiera, posizione);
+                        } else {
+                            System.out.println("Contatto non presente");
+                            System.out.println("Aggiunta del nuovo contatto...");
+                            gestore[contaContatti] = LeggiContatto(tastiera);
+                            contaContatti++;
+                            System.out.println("Contatto aggiunto con successo.");
+                        }
+                    } else {
+                        System.out.println("Non ci sono contatti");
+                    }
+                }
+                case 5 -> eliminaContatto(gestore, contaContatti, tastiera);
+                case 6 -> fine = true;
             }
-
-        } while (!uscita);
+        } while (!fine);
         System.out.println("Fine programma");
     }
 
     public static Persona LeggiContatto(Scanner tastiera) {
         Persona contatto = new Persona();
-        System.out.println("Inserici il nome");
+
+        System.out.println("Inserisci il nome");
         contatto.nome = tastiera.nextLine();
-        System.out.println("Inserici il cognome");
+        System.out.println("Inserisci il cognome");
         contatto.cognome = tastiera.nextLine();
-        System.out.println("Inserici il numero di telefono");
+        System.out.println("Inserisci il numero di telefono");
         contatto.numDiTelefono = tastiera.nextLine();
-        String[] opzioni = {"TipoAbbonamento", "1-cellulare", "2-abitazione", "3-azienda"};
+        String[] opzioni = {"Tipo di abbonamento", "1 - cellulare", "2 - Abitazione", "3 - Azienda"};
+
         int scelta;
         do {
             scelta = menu(opzioni, tastiera);
             switch (scelta) {
-                case 1:
-                    contatto.tipo = Tipologia.cellulare;
-                    break;
-                case 2:
-                    contatto.tipo = Tipologia.abitazione;
-                    break;
-                case 3:
-                    contatto.tipo = Tipologia.azienda;
-                    break;
+                case 1 -> contatto.tipo = Tipologia.cellulare;
+                case 2 -> contatto.tipo = Tipologia.abitazione;
+                case 3 -> contatto.tipo = Tipologia.azienda;
             }
-
         } while (scelta > 3 || scelta < 1);
 
         return contatto;
     }
 
-    public static int trovaContatto(Persona[] gestore, Persona nuovoContatto, int contacontatti) {
-        for (int i = 0; i < contacontatti; i++) {
-            if (gestore[i].cognome.equalsIgnoreCase(nuovoContatto.cognome) && gestore[i].nome.equalsIgnoreCase(nuovoContatto.nome)) {
-                return i; // Restituisce l'indice del contatto se trovato
+    public static void Visualizza(Persona[] gestore, int contaContatti, boolean visualizzaSingolo, Scanner tastiera, int posizione) {
+        if (!visualizzaSingolo){
+            for (int i = 0; i < contaContatti; i++) {
+                System.out.println(gestore[i].anagrafica());
             }
+        } else {
+            System.out.println(gestore[posizione].ricercaSingola());
         }
-        return -1; // Restituisce -1 se il contatto non è stato trovato
     }
 
-    public static void Visualizza(Persona gestore[], int contacontatti) {
-        for (int i = 0; i < contacontatti; i++) {
-            System.out.println(gestore[i].anagrafica());
+    public static int verificaPresenzaContatto(Scanner tastiera, Persona[] gestore, int contaContatti) {
+        System.out.println("Inserisci il nome");
+        String nome = tastiera.nextLine();
+        System.out.println("Inserisci il cognome");
+        String cognome = tastiera.nextLine();
+
+        for (int i = 0; i < contaContatti; i++) {
+            if (gestore[i].nome.equals(nome) && gestore[i].cognome.equals(cognome)) {
+                return i;
+            }
         }
+
+        return -1;
+    }
+
+    public static void eliminaContatto(Persona[] gestore, int contaContatti, Scanner tastiera) {
+        System.out.println("Seleziona il metodo per trovare e cancellare il contatto:");
+        System.out.println("1 - Inserendo il numero di telefono");
+        System.out.println("2 - Inserendo il cognome e il nome");
+        int scelta = tastiera.nextInt();
+        tastiera.nextLine();
+
+        switch (scelta) {
+            case 1:
+                eliminaContattoPerNumero(gestore, contaContatti, tastiera);
+                break;
+            case 2:
+                eliminaContattoPerNome(gestore, contaContatti, tastiera);
+                break;
+            default:
+                System.out.println("Scelta non valida.");
+        }
+    }
+
+    public static void eliminaContattoPerNumero(Persona[] gestore, int contaContatti, Scanner tastiera) {
+        System.out.println("Inserisci il numero di telefono del contatto da eliminare:");
+        String numeroTelefono = tastiera.nextLine();
+
+        for (int i = 0; i < contaContatti; i++) {
+            if (gestore[i].numDiTelefono.equals(numeroTelefono)) {
+                for (int j = i; j < contaContatti - 1; j++) {
+                    gestore[j] = gestore[j + 1];
+                }
+                gestore[contaContatti - 1] = new Persona();
+                contaContatti--;
+                System.out.println("Contatto eliminato con successo.");
+                return;
+            }
+        }
+        System.out.println("Contatto non trovato.");
+    }
+
+    public static void eliminaContattoPerNome(Persona[] gestore, int contaContatti, Scanner tastiera) {
+        System.out.println("Inserisci il nome del contatto da eliminare:");
+        String nome = tastiera.nextLine();
+        System.out.println("Inserisci il cognome del contatto da eliminare:");
+        String cognome = tastiera.nextLine();
+
+        for (int i = 0; i < contaContatti; i++) {
+            if (gestore[i].nome.equals(nome) && gestore[i].cognome.equals(cognome)) {
+                for (int j = i; j < contaContatti - 1; j++) {
+                    gestore[j] = gestore[j + 1];
+                }
+                gestore[contaContatti - 1] = new Persona();
+                contaContatti--;
+                System.out.println("Contatto eliminato con successo.");
+                return;
+            }
+        }
+        System.out.println("Contatto non trovato.");
     }
 }
